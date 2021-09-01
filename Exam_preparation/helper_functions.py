@@ -57,3 +57,20 @@ def create_model_checkpoint(model_name, save_path="model_experiments"):
   return tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(save_path, model_name), # create filepath to save model
                                               verbose=0, # only output a limited amount of text
                                               save_best_only=True) # save only the best model to file
+
+def predict_evaluate_plot(model, test_windows, test_labels, history):
+  """
+  Function for evaluation the trained model and plotting the training curve
+  Parameters
+  ---------
+  model: trained model
+  test_windows: test windows for validating the model
+  test_labels: labels for validating the model
+  history: model training history
+
+  Returns dictionary with varius evaluation metrics
+  """
+  model_preds = make_preds(model, test_windows)
+  model_results = evaluate_preds(tf.squeeze(test_labels), model_preds)
+  plot_mae_loss_curves(history)
+  return model_results
