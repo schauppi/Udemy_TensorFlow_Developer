@@ -72,19 +72,28 @@ def make_preds(model, input_data):
   forecast = model.predict(input_data)
   return tf.squeeze(forecast) # return 1D array of predictions
 
-def predict_evaluate_plot(model, test_windows, test_labels, history):
-  """
-  Function for evaluation the trained model and plotting the training curve
-  Parameters
-  ---------
-  model: trained model
-  test_windows: test windows for validating the model
-  test_labels: labels for validating the model
-  history: model training history
+def evaluate_preds(y_true, y_pred):
+  # Make sure float32 (for metric calculations)
+  y_true = tf.cast(y_true, dtype=tf.float32)
+  y_pred = tf.cast(y_pred, dtype=tf.float32)
 
-  Returns dictionary with varius evaluation metrics
-  """
-  model_preds = make_preds(model, test_windows)
-  model_results = evaluate_preds(tf.squeeze(test_labels), model_preds)
-  plot_mae_loss_curves(history)
-  return model_results
+  # Calculate various metrics
+  mae = tf.keras.metrics.mean_absolute_error(y_true, y_pred)
+  mse = tf.keras.metrics.mean_squared_error(y_true, y_pred)
+  rmse = tf.sqrt(mse)
+  mape = tf.keras.metrics.mean_absolute_percentage_error(y_true, y_pred)
+  mase = mean_absolute_scaled_error(y_true, y_pred)
+
+  # Account for different sized metrics (for longer horizons, reduce to single number)
+  if mae.ndim > 0: # if mae isn't already a scalar, reduce it to one by aggregating tensors to mean
+    mae = tf.reduce_mean(mae)
+    mse = tf.reduce_mean(mse)
+    rmse = tf.reduce_mean(rmse)
+    mape = tf.reduce_mean(mape)
+    mase = tf.reduce_mean(mase)
+
+  return {"mae": mae.numpy(),
+          "mse": mse.numpy(),
+          "rmse": rmse.numpy(),
+          "mape": mape.numpy(),
+          "mase": mase.numpy()}
