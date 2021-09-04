@@ -82,7 +82,6 @@ def evaluate_preds(y_true, y_pred):
   mse = tf.keras.metrics.mean_squared_error(y_true, y_pred)
   rmse = tf.sqrt(mse)
   mape = tf.keras.metrics.mean_absolute_percentage_error(y_true, y_pred)
-  mase = mean_absolute_scaled_error(y_true, y_pred)
 
   # Account for different sized metrics (for longer horizons, reduce to single number)
   if mae.ndim > 0: # if mae isn't already a scalar, reduce it to one by aggregating tensors to mean
@@ -90,10 +89,8 @@ def evaluate_preds(y_true, y_pred):
     mse = tf.reduce_mean(mse)
     rmse = tf.reduce_mean(rmse)
     mape = tf.reduce_mean(mape)
-    mase = tf.reduce_mean(mase)
 
   return {"mae": mae.numpy(),
           "mse": mse.numpy(),
           "rmse": rmse.numpy(),
-          "mape": mape.numpy(),
-          "mase": mase.numpy()}
+          "mape": mape.numpy()}
